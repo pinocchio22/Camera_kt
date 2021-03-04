@@ -22,12 +22,13 @@ import java.text.SimpleDateFormat
 class MainActivity : AppCompatActivity() {
 
     val CAMERA_PERMISSION = arrayOf(Manifest.permission.CAMERA)
-    val STOREGE_PERMISSION = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    val STORAGE_PERMISSION = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     val FLAG_PERM_CAMERA = 98
     val FLAG_PERM_STORAGE = 99
 
     val FLAG_REQ_CAMERA = 101
+    val FLAG_REQ_GALLARY = 102
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +39,14 @@ class MainActivity : AppCompatActivity() {
             openCamera()
             } else{
                 ActivityCompat.requestPermissions(this, CAMERA_PERMISSION,FLAG_PERM_CAMERA)
+            }
+        }
+
+        button2.setOnClickListener {
+            if(isPermitted(STORAGE_PERMISSION)){
+                openGallary()
+            } else{
+                ActivityCompat.requestPermissions(this, STORAGE_PERMISSION,FLAG_PERM_STORAGE)
             }
         }
     }
@@ -58,6 +67,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun openGallary() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = MediaStore.Images.Media.CONTENT_TYPE
+        startActivityForResult(intent, FLAG_REQ_GALLARY)
+    }
+
     fun saveImageFile(filename:String, mimeType:String, bitmap:Bitmap) : Uri? {
         var values = ContentValues()
         values.put(MediaStore.Images.Media.DISPLAY_NAME, filename)
@@ -72,7 +87,6 @@ class MainActivity : AppCompatActivity() {
         try {
             if (uri != null) {
                 var descriptor = contentResolver.openFileDescriptor(uri, "w")   //쓰기모드로 파일을 연다
-
                 if (descriptor != null) {
                     val fos = FileOutputStream(descriptor.fileDescriptor)
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
@@ -106,6 +120,10 @@ class MainActivity : AppCompatActivity() {
                         val uri = saveImageFile(filename, "image/jpg", bitmap)
                         imageView.setImageURI(uri)
                     }
+                }
+                FLAG_REQ_GALLARY -> {
+                    val uri = data?.data
+                    imageView.setImageURI(uri)
                 }
             }
         }
